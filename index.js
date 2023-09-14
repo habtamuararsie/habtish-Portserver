@@ -1,13 +1,13 @@
 import express from "express";
 import nodemailer from 'nodemailer';
-
+// import cors_proxy from 'cors-anywhere';
 import dotenv from 'dotenv';
 dotenv.config();
 import cors from "cors";
-import path from "path";
-const port = process.env.PORT ;
-const host = process.env.HOST;
-// const host = '0.0.0.0';
+
+const port = process.env.PORT||80;
+// const host = process.env.HOST;
+const host = '0.0.0.0';
 
 const app = express();
 app.use(cors())
@@ -17,14 +17,18 @@ app.use(
 		extended: true,
 	})
 );
-
+// Enable CORS middleware
+// app.use((req, res, next) => {
+//   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080'); // Replace with your client's origin
+//   next();
+// });
 // res.sendFile(path.join(__dirname, 'views', 'index.html'));
 
     //__dirname : It will resolve to your project folder.
 
 
 app.get('/', (req, res) => { 
-  
+  res.set('Access-Control-Allow-Origin', '*');
     console.log("working");
    return res.send("working..")
 })
@@ -33,6 +37,7 @@ app.get('/', (req, res) => {
 
 app.post('/api/email', async (req, res) => { 
   // res.sendFile(path.join('C:/xampp/htdocs/', 'habte-portfolio', 'index.html'));
+  // res.set('Access-Control-Allow-Origin', '*');
     const { name, email, subject, message } = req.body;
     if (!name || !email || !subject || !message) { 
          res.status(500).send('all inputs are requered habtish');
@@ -40,8 +45,11 @@ app.post('/api/email', async (req, res) => {
      try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
-
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
       auth: {
+        method: 'PLAIN',
         user: process.env.EMAIL,
         pass: process.env.PASSWORD,
       },
@@ -68,6 +76,11 @@ app.post('/api/email', async (req, res) => {
     
   }
 })
+
+// cors_proxy
+//   .createServer({
+//     originWhitelist: [], // Allow all origins
+//   })
 
 app.listen(port, host, () => {
 	console.log(`http://${host}:${port}`);
